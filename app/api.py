@@ -46,9 +46,9 @@ def detect():
     cv_coordinates = False
 
     if '/AcroForm' in pdf_file.trailer['/Root']:
-        current_app.logger.info('--- Type "pypdf2" ---')
+        current_app.logger.info('--- Type "pdf-forms" ---')
         doc_pages = extract_form(bytes_file)
-        current_app.logger.info('--- PyPDF2 searching finished ---')
+        current_app.logger.info('--- PDF forms searching finished ---')
     else:
         current_app.logger.info('--- Type "cv" ---')
         doc_pages = extract_elements_cv(bytes_file)
