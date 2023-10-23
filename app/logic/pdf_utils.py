@@ -3,7 +3,11 @@ import json
 from io import BytesIO
 
 import pytesseract
-from flask import current_app as app
+import os
+if os.getenv('COLAB'):
+    from colab.flask import current_app as app
+else:
+    from flask import current_app as app
 import cv2
 import numpy
 from pdf2image import convert_from_bytes, convert_from_path

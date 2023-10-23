@@ -1,5 +1,9 @@
 """PDF fillable elements classes"""
-from flask import current_app as app
+import os
+if os.getenv('COLAB'):
+    from colab.flask import current_app as app
+else:
+    from flask import current_app as app
 
 from app.logic.constants import CONVERT_COORD_COEF_PYPDF2
 from app.logic.exceptions import FillElementParseError
