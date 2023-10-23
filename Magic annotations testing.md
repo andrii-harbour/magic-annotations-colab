@@ -22,6 +22,7 @@ Follow these steps to participate in the testing:
 5.  Review the results in the "output" folder; you can view each image by double-clicking on it.
 	![instruction image](https://github.com/andrii-harbour/magic-annotations-colab/assets/120495135/e97dbb4b-6b7c-498e-a548-ca096265e5af)
     
+### P.S. Video version [click here](https://cdn.zappy.app/3a9b0a8921a18c03cd8bb3faf199189a.mp4)
 
 ## Test Requirements
 
