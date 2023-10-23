@@ -47,7 +47,6 @@ MANIFEST
 
 # Py linter
 .pylintrc
-/output
 *.png
 *.jpg
 *.json
