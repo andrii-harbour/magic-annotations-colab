@@ -81,8 +81,8 @@ def get_box_related_words(ocr_data, extended_box_coords) -> dict:
 
 
 def get_field_name(field, page_text, debug_image):
-    # return 'test'
     w, h = field.x2-field.x1, field.y2-field.y1
+    # debug
     # draw_image = Image.fromarray(debug_image)
     # draw = ImageDraw.Draw(draw_image)
     # draw.rectangle((x, y, x+w, y+h), outline='red', width=10)
@@ -94,6 +94,7 @@ def get_field_name(field, page_text, debug_image):
     }
     box_related_words = get_box_related_words(page_text, extended_areas)
     cleaned_field_name = get_field_name_from_the_sides(box_related_words)
+    # debug
     # _debug_draw_boxes((field.x1, field.y1, field.x2, field.y2), extended_areas, debug_image)
     # draw_image.show()
     return cleaned_field_name
@@ -105,7 +106,6 @@ def _debug_draw_boxes(box_coords, extended_box_coords, image):
     draw.rectangle(box_coords, outline='red', width=10)
     for coords in extended_box_coords.values():
         draw.rectangle(coords, outline='blue', width=10)
-    # draw.rectangle(extended_box_coords, outline='blue', width=10)
     image.show()
     return
 
@@ -116,14 +116,9 @@ def preprocess_image(page_image):
 
     result = cv2.GaussianBlur(thresh, (5, 5), 0)
     result = 255 - result
-
+    # debug
     # im = Image.fromarray(result)
     # im.show()
-
-    # cv2.imshow('thresh', thresh)
-    # # cv2.imshow('result', result)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
     return result
 
 

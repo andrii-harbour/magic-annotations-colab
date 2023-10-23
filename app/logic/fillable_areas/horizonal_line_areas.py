@@ -110,11 +110,11 @@ def find_line_fillable_areas(gray, fillable_area_limits):
     line_rectangles = []
     tables_upper_borders = _find_tables_upper_lines(gray)
 
-    image_with_fillable_areas = Image.fromarray(gray)
-    draw = ImageDraw.Draw(image_with_fillable_areas)
+    # debug
+    # image_with_fillable_areas = Image.fromarray(gray)
+    # draw = ImageDraw.Draw(image_with_fillable_areas)
     for i, line in enumerate(lines):
         if i>=0:  # todo: change i to line number (from bottom to top) -> debug
-            # draw.rectangle((line.x1, line.y1, line.x2, line.y2), outline='black', width=10)
             rectangle = _find_fillable_line_area(
                 thresh, line, fillable_area_limits, tables_upper_borders
             )
@@ -122,10 +122,10 @@ def find_line_fillable_areas(gray, fillable_area_limits):
                 x1, y1, x2, y2 = rectangle
                 r = Rectangle(x1, y1, x2, y2)
                 line_rectangles.append(r)
-                draw.rectangle((x1, y1, x2, y2), outline='black', width=10)
-                draw.text((x1+10, y1+10), str(i), fill='black')
+                # draw.rectangle((x1, y1, x2, y2), outline='black', width=10)
+                # draw.text((x1+10, y1+10), str(i), fill='black')
     # draw.rectangle(tables_upper_borders[0], outline='black', width=10)
-    image_with_fillable_areas.show()
+    # image_with_fillable_areas.show()
     return line_rectangles
 
 
@@ -167,6 +167,7 @@ def _find_tables_upper_lines(gray):
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
         x, y, w, h = cv2.boundingRect(largest_contour)
+        # ToDo: use table_min_cell_width here
         if h > 200 and w > 200:
             table_coords = (x, y, x + w, y + h)
 
@@ -174,6 +175,7 @@ def _find_tables_upper_lines(gray):
     if table_coords:
         upper_borders_coordinates.append((x, y, x + w, y))
     return upper_borders_coordinates
+
 
 def _find_fillable_line_area(image, line, fillable_area_limits, tables_upper_borders):
     """Find fillable area above the line."""
@@ -213,22 +215,3 @@ def _find_fillable_line_area(image, line, fillable_area_limits, tables_upper_bor
             line.x1 + MARGIN, line.y1 - max_height,
             line.x2 - MARGIN, line.y1)
     return None
-    # disabling horizontal grow as it works badly with tables
-    # else:
-    #     for i in range(1, line.x2 - line.x1, HORIZONTAL_GROW_STEP):
-    #         current_area = (
-    #             image[line.y1 - min_height:line.y1, line.x1 + MARGIN + i:line.x2 - MARGIN]
-    #         )
-    #         is_current_area_suitable = (
-    #                 current_area.shape[0] and
-    #                 current_area.shape[1] and
-    #                 np.amax(current_area) == 0
-    #         )
-    #         if is_current_area_suitable:
-    #             x1, x2 = line.x1 + MARGIN + i, line.x2 - MARGIN
-    #             for j in range(1, max_height - min_height + 1, VERTICAL_GROW_STEP):
-    #                 current_area = (image[line.y1 - min_height - j:line.y1, x1:x2])
-    #                 is_current_area_suitable = np.amax(current_area) == 0
-    #                 if not is_current_area_suitable:
-    #                     return (x1, line.y1 - min_height - j + VERTICAL_GROW_STEP, x2, line.y1)
-    #             return x1, line.y1 - max_height, x2, line.y1

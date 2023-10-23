@@ -6,7 +6,6 @@ else:
     from flask import current_app as app
 
 from app.logic.constants import CONVERT_COORD_COEF_PYPDF2
-from app.logic.exceptions import FillElementParseError
 from app.logic.fillable_element import FillableElement
 
 
@@ -40,43 +39,18 @@ class DocumentPage:
     def _from_fitz(self, widget):
         try:
             if widget.field_type_string.lower() in ['text', 'signature', 'checkbox']:
-                # fillable_element = FillableElement(
-                #     x1=float(widget.rect.x0 - self._media_box[0])*CONVERT_COORD_COEF_PYPDF2,
-                #     y1=float(self._media_box[3] - widget.rect.y0)*CONVERT_COORD_COEF_PYPDF2,
-                #     x2=float(widget.rect.x1 - self._media_box[0])*CONVERT_COORD_COEF_PYPDF2,
-                #     y2=float(self._media_box[3] - widget.rect.y1)*CONVERT_COORD_COEF_PYPDF2,
-                #     obj_type=widget.field_type_string.lower(),
-                #     name=widget.field_name,
-                #     value=widget.field_value,
-                # )
                 fillable_element = FillableElement(
                     x1=float(widget.rect.x0) * CONVERT_COORD_COEF_PYPDF2,
                     y1=float(widget.rect.y0) * CONVERT_COORD_COEF_PYPDF2,
                     x2=float(widget.rect.x1) * CONVERT_COORD_COEF_PYPDF2,
                     y2=float(widget.rect.y1) * CONVERT_COORD_COEF_PYPDF2,
                     obj_type=widget.field_type_string.lower(),
-                    name=widget.field_name,
+                    name=None,
                     value=widget.field_value,
                     page_number=self.page_num,
                 )
                 self._list.append(fillable_element)
         except:
-            app.logger.exception('FillElementParseError')
-
-    def _from_pypdf2(self, field_obj):
-        """Create and add FillableElement in to _list
-        Create from PyPDF2 object
-        Args:
-            field (PyPDF2.generic.IndirectObject)
-        """
-        try:
-            fillable_element = FillableElement.create_from_field_obj(
-                    field_obj,
-                    self._media_box,
-            )
-
-            self._list.append(fillable_element)
-        except FillElementParseError:
             app.logger.exception('FillElementParseError')
 
     def _from_cv(self, **field_args):
@@ -96,7 +70,7 @@ class DocumentPage:
         fillable_element = FillableElement(**field_args, page_number=self.page_num)
         self._list.append(fillable_element)
 
-    def add_element(self, field_obj=None, widget=None, **field_args):
+    def add_element(self, widget=None, **field_args):
         """Create and add FillableElement in to _list
         Args:
             field (PyPDF2.generic.IndirectObject)
@@ -110,9 +84,7 @@ class DocumentPage:
                 value (str)
             }
         """
-        if field_obj:
-            self._from_pypdf2(field_obj)
-        elif widget:
+        if widget:
             self._from_fitz(widget)
         else:
             self._from_cv(**field_args)

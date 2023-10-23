@@ -147,16 +147,14 @@ def extract_form(pdf_binary):
     for page_number, page in enumerate(pdf_file):
         # Search for widgets (form fields are a type of widget)
         doc_page = DocumentPage(page_number, page.mediabox)
-        # if page_number != 2:
-        #     continue
         widgets = page.widgets()
         for widget in widgets:
             doc_page.add_element(widget=widget)
-            field_type = widget.field_type_string
-            field_name = None # most of the time field name is unreadable, so we don't use it
+            # debug
+            # field_type = widget.field_type_string
             # The rectangle containing the widget (form field), it includes x0, y0, x1, y1 coordinates
-            rect = widget.rect
-            print(f"Page {page_number + 1} | Field Name: {field_name}, Field Type: {field_type}, Coordinates: {rect}")
+            # rect = widget.rect
+            # print(f"Page {page_number + 1} | Field Name: {field_name}, Field Type: {field_type}, Coordinates: {rect}")
         pages.append(doc_page)
     pdf_file.close()
     return pages
