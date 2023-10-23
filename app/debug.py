@@ -1,3 +1,4 @@
+import os
 import numpy
 from pdf2image import convert_from_bytes
 from PIL import Image, ImageDraw, ImageFont
