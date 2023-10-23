@@ -120,7 +120,7 @@ def extract_elements_cv(pdf_binary):
                 x2=checkbox.x2,
                 y2=checkbox.y2,
                 obj_type='CHECKBOX',
-                name=None,
+                name=field_name,
                 value=None
             )
 
