@@ -47,7 +47,6 @@ def detect():
 
     if '/AcroForm' in pdf_file.trailer['/Root']:
         current_app.logger.info('--- Type "pypdf2" ---')
-        # doc_pages = extract_elements_pypdf2(bytes_file)
         doc_pages = extract_form(bytes_file)
         current_app.logger.info('--- PyPDF2 searching finished ---')
     else:
@@ -58,7 +57,7 @@ def detect():
 
     current_app.logger.info('--- Detecting finished ---')
 
-    create_pdf_with_detections(doc_pages, bytes_file, cv_coordinates)
+    create_pdf_with_detections(doc_pages, bytes_file)
 
     result_list = [page.fillable_elements_to_dict() for page in doc_pages]  # short version of above for loop
 

@@ -54,7 +54,7 @@ class FillableElement:
             media_box (PyPDF2.generic.RectangleObject): Contain pdf
                 document page size
         """
-        instance = cls(*[None]*7)
+        instance = cls(*[None]*8)
         instance.extract_from_field_obj(field_obj, media_box)
 
         return instance

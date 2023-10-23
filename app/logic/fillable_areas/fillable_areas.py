@@ -20,18 +20,17 @@ def find_fillable_areas(image):
     fillable_area_limits = _calc_fillable_area_limits(image)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     line_rectangles = find_line_fillable_areas(gray, fillable_area_limits)
-    empty_fillable_rectangles = find_empty_fillable_areas(
-        gray, line_rectangles, fillable_area_limits)
+    # temporary disabled
+    # empty_fillable_rectangles = find_empty_fillable_areas(
+    #     gray, line_rectangles, fillable_area_limits)
     checkbox_areas = find_checkbox_fillable_areas(gray)
-    # checkbox_areas = []
 
     filtered_line_rectangles = _filter_areas(
         line_rectangles, fillable_area_limits)
-    filtered_empty_fillable_rectangles = _filter_areas(
-        empty_fillable_rectangles, fillable_area_limits)
+    # filtered_empty_fillable_rectangles = _filter_areas(
+    #     empty_fillable_rectangles, fillable_area_limits)
     return {
         'line_areas': filtered_line_rectangles,
-        'empty_region_areas': filtered_empty_fillable_rectangles,
         'checkbox_areas': checkbox_areas,
     }
 

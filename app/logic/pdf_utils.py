@@ -64,8 +64,6 @@ def extract_elements_cv(pdf_binary):
         page_image_converted = page_images[0]
         cv_image = numpy.array(page_image_converted)
 
-        # save image for debugging
-        # cv2.imwrite(f'page{page_num}.png', cv_image)  # original image
         # image = Image.fromarray(cv_image)
         # image.show()
 
@@ -84,18 +82,19 @@ def extract_elements_cv(pdf_binary):
         page_text = pytesseract.image_to_data(
             processed_image_for_tesseract, output_type=Output.DICT, config='--psm 3', lang='eng'
         )
+        # debug
         # with open(f'page{page_num}_text.json', 'w') as f:
         #     json.dump(page_text, f, indent=4)
 
 
         for i, line in enumerate(line_areas):
             # draw line on image with PIL
+            # debug
             # draw = ImageDraw.Draw(image)
             # draw.rectangle((line.x1, line.y1, line.x2, line.y2), outline=RECTANGLES_OUTLINE_COLOR_1, width=RECTANGLES_OUTLINE_WIDTH)
             # image.save(f'page{page_num}_line.png')
 
             field_name = get_field_name(line, page_text, cv_image)  # todo: cv image is just for debug
-            # field_name = 'test'
 
             obj_type = 'TEXT'
             if field_name:
