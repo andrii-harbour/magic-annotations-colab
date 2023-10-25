@@ -1,5 +1,5 @@
 import os
-import numpy
+import numpy as np
 from pdf2image import convert_from_bytes
 from PIL import Image, ImageDraw, ImageFont
 
@@ -45,7 +45,7 @@ def create_pdf_with_detections(doc_pages, pdf_binary):
     page_images = convert_from_bytes(page_bytes, PDF_DOCUMENT_SIZE)
     for doc_page in doc_pages:
         page_image_converted = page_images[doc_page.page_num]
-        cv_image = numpy.array(page_image_converted)
+        cv_image = np.array(page_image_converted)
         image = Image.fromarray(cv_image)
         for fillable_element in doc_page.fillable_elements_to_dict():
             draw_founded_areas(image, fillable_element)
