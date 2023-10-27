@@ -7,8 +7,8 @@ from PyPDF2 import PdfReader
 
 from app.debug import create_pdf_with_detections
 from app.helpers import extract_binary
-from app.logic import extract_elements_cv, extract_elements_pypdf2
-from app.logic.pdf_utils import extract_form
+from app.logic import extract_elements_cv
+from app.logic.pdf_utils import extract_widgets_pdfminer
 
 
 def detect():
@@ -47,7 +47,7 @@ def detect():
 
     if '/AcroForm' in pdf_file.trailer['/Root']:
         current_app.logger.info('--- Type "pdf-forms" ---')
-        doc_pages = extract_form(bytes_file)
+        doc_pages = extract_widgets_pdfminer(bytes_file)
         current_app.logger.info('--- PDF forms searching finished ---')
     else:
         current_app.logger.info('--- Type "cv" ---')

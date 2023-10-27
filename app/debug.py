@@ -26,7 +26,7 @@ def draw_founded_areas(image, fillable_element):
     # Custom font style and font size
     roboto_font = ImageFont.truetype('Roboto-Regular.ttf', size=30)
     obj_type = 'c' if fillable_element['obj_type'].lower() == 'checkbox' else fillable_element['obj_type']
-    debug_text = f"{obj_type}, {fillable_element['name']}" if fillable_element['name'] else f"{obj_type}"
+    debug_text = f"{obj_type}, {fillable_element['name']}" if fillable_element['name'] and fillable_element['obj_type'].lower() != 'checkbox' else f"{obj_type}"
     draw.text((
         fillable_element['x1']+10,
         fillable_element['y1']+5),

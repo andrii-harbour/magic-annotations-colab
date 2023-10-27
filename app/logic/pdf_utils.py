@@ -10,13 +10,16 @@ else:
     from flask import current_app as app
 import cv2
 import numpy
-from pdf2image import convert_from_bytes, convert_from_path
+from pdf2image import convert_from_bytes
 from PIL import Image, ImageDraw
 from PyPDF2 import PdfReader, PdfWriter
 from PyPDF2.errors import PdfReadError
+from pdfminer.pdfpage import PDFPage
+from pdfminer.pdfparser import PDFParser
+from pdfminer.pdfdocument import PDFDocument
+from pdfminer.pdftypes import resolve1
 from pytesseract import Output
 from werkzeug.exceptions import BadRequest
-import fitz
 
 from app.logic.constants import (
     PDF_DOCUMENT_SIZE,
@@ -141,97 +144,102 @@ def extract_elements_cv(pdf_binary):
     return pages
 
 
-def extract_form(pdf_binary):
-    pdf_file = fitz.open(stream=pdf_binary)
+def extract_widgets_pdfminer(pdf_binary):
+    parser = PDFParser(pdf_binary)
+    doc = PDFDocument(parser)
     pages = []
-    for page_number, page in enumerate(pdf_file):
-        # Search for widgets (form fields are a type of widget)
-        doc_page = DocumentPage(page_number, page.mediabox)
-        widgets = page.widgets()
-        for widget in widgets:
-            doc_page.add_element(widget=widget)
-            # debug
-            # field_type = widget.field_type_string
-            # The rectangle containing the widget (form field), it includes x0, y0, x1, y1 coordinates
-            # rect = widget.rect
-            # print(f"Page {page_number + 1} | Field Name: {field_name}, Field Type: {field_type}, Coordinates: {rect}")
-        pages.append(doc_page)
-    pdf_file.close()
-    return pages
-
-
-def extract_elements_pypdf2(pdf_binary):
-    """Read pdf binary and return list of fillable elements
-    Args:
-       pdf_binary (io.BytesIO)
-    Returns:
-        list<logic.classes.DocumentPage>
-    Raises:
-        werkzeug.exceptions.BadRequest: when can't read file with PyPDF2
-    """
-    pdf_file = PdfReader(pdf_binary, strict=False)
-
-    if pdf_file.is_encrypted:
-        try:
-            pdf_file.decrypt('')
-        except NotImplementedError as e:
-            raise BadRequest('File is encrypted') from e
-
-    media_box = pdf_file.pages[0].mediabox
-    pages = []
-
     try:
-        catalog = pdf_file.trailer['/Root']
-        kids = catalog['/Pages']['/Kids']
+        pdf_pages = list(PDFPage.create_pages(doc))
     except KeyError as e:
         app.logger.exception('KeyError:', e)
         return pages
 
-    # page_bytes = pdf_binary.getvalue()
-    # page_images = convert_from_bytes(page_bytes, PDF_DOCUMENT_SIZE)
-
-    for page_num, page in enumerate(kids):
-        page_obj = page.get_object()
-
-        # page_image_converted = page_images[page_num]
-        # cv_image = numpy.array(page_image_converted)
-        # image = Image.fromarray(cv_image)
-        # image.save(f'test{page_num}.png')
-
-        if '/Annots' not in page_obj:
+    for page_number, page in enumerate(pdf_pages):
+        page_obj = resolve1(page).attrs
+        if 'Annots' not in page_obj.keys():
             continue
-
-        fields = extract_nested_elements(page_obj['/Annots'])
-
-        doc_page = DocumentPage(page_num, media_box)
-
-        for field_obj in fields:
-            doc_page.add_element(field_obj=field_obj)
-
+        media_box = page_obj['MediaBox']
+        widgets = resolve1(page_obj['Annots'])
+        doc_page = DocumentPage(page_number, media_box)
+        for widget in widgets:
+            doc_page.add_element(widget=resolve1(widget))
         pages.append(doc_page)
 
     return pages
 
 
-def extract_nested_elements(fields):
-    """Sometimes pdf elements could have deep nested structure
-    This function makes a flat structure instead of a nested
-    Args:
-       fields (list<PyPDF2.generic.IndirectObject>)
-    Returns:
-        list<PyPDF2.generic.IndirectObject>
-    """
-
-    fields_list = []
-
-    try:
-        for field in fields:
-            field_obj = field.get_object()
-            fields_list.append(field_obj)
-
-            if field_obj.get('/Kids'):
-                fields_list += extract_nested_elements(field_obj['/Kids'])
-    except (TypeError, PdfReadError) as e:
-        app.logger.exception(f'{type(e)}: {e}')
-
-    return fields_list
+# def extract_elements_pypdf2(pdf_binary):
+#     """Read pdf binary and return list of fillable elements
+#     Args:
+#        pdf_binary (io.BytesIO)
+#     Returns:
+#         list<logic.classes.DocumentPage>
+#     Raises:
+#         werkzeug.exceptions.BadRequest: when can't read file with PyPDF2
+#     """
+#     pdf_file = PdfReader(pdf_binary, strict=False)
+#
+#     if pdf_file.is_encrypted:
+#         try:
+#             pdf_file.decrypt('')
+#         except NotImplementedError as e:
+#             raise BadRequest('File is encrypted') from e
+#
+#     media_box = pdf_file.pages[0].mediabox
+#     pages = []
+#
+#     try:
+#         catalog = pdf_file.trailer['/Root']
+#         kids = catalog['/Pages']['/Kids']
+#     except KeyError as e:
+#         app.logger.exception('KeyError:', e)
+#         return pages
+#
+#     # page_bytes = pdf_binary.getvalue()
+#     # page_images = convert_from_bytes(page_bytes, PDF_DOCUMENT_SIZE)
+#
+#     for page_num, page in enumerate(kids):
+#         page_obj = page.get_object()
+#
+#         # page_image_converted = page_images[page_num]
+#         # cv_image = numpy.array(page_image_converted)
+#         # image = Image.fromarray(cv_image)
+#         # image.save(f'test{page_num}.png')
+#
+#         if '/Annots' not in page_obj:
+#             continue
+#
+#         fields = extract_nested_elements(page_obj['/Annots'])
+#
+#         doc_page = DocumentPage(page_num, media_box)
+#
+#         for field_obj in fields:
+#             doc_page.add_element(field_obj=field_obj)
+#
+#         pages.append(doc_page)
+#
+#     return pages
+#
+#
+# def extract_nested_elements(fields):
+#     """Sometimes pdf elements could have deep nested structure
+#     This function makes a flat structure instead of a nested
+#     Args:
+#        fields (list<PyPDF2.generic.IndirectObject>)
+#     Returns:
+#         list<PyPDF2.generic.IndirectObject>
+#     """
+#
+#     fields_list = []
+#
+#     try:
+#         for field in fields:
+#             field_obj = field.get_object()
+#             fields_list.append(field_obj)
+#
+#             if field_obj.get('/Kids'):
+#                 fields_list += extract_nested_elements(field_obj['/Kids'])
+#     except (TypeError, PdfReadError) as e:
+#         app.logger.exception(f'{type(e)}: {e}')
+#
+#     return fields_list

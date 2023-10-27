@@ -5,7 +5,6 @@ if os.getenv('COLAB'):
 else:
     from flask import current_app as app
 
-from app.logic.constants import CONVERT_COORD_COEF_PYPDF2
 from app.logic.fillable_element import FillableElement
 
 
@@ -36,19 +35,16 @@ class DocumentPage:
         """
         return self._list
 
-    def _from_fitz(self, widget):
+    def _from_pdfminer(self, widget):
         try:
-            if widget.field_type_string.lower() in ['text', 'signature', 'checkbox']:
-                fillable_element = FillableElement(
-                    x1=float(widget.rect.x0) * CONVERT_COORD_COEF_PYPDF2,
-                    y1=float(widget.rect.y0) * CONVERT_COORD_COEF_PYPDF2,
-                    x2=float(widget.rect.x1) * CONVERT_COORD_COEF_PYPDF2,
-                    y2=float(widget.rect.y1) * CONVERT_COORD_COEF_PYPDF2,
-                    obj_type=widget.field_type_string.lower(),
-                    name=None,
-                    value=widget.field_value,
-                    page_number=self.page_num,
-                )
+            fillable_element = FillableElement.create_from_field_obj(
+                widget,
+                self._media_box,
+                self.page_num
+            )
+            if fillable_element.obj_type and fillable_element.obj_type.lower() in [
+                'text', 'signature', 'checkbox'
+            ]:
                 self._list.append(fillable_element)
         except:
             app.logger.exception('FillElementParseError')
@@ -85,7 +81,8 @@ class DocumentPage:
             }
         """
         if widget:
-            self._from_fitz(widget)
+            # self._from_fitz(widget)
+            self._from_pdfminer(widget)
         else:
             self._from_cv(**field_args)
 
